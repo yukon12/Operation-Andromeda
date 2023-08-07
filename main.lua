@@ -1,7 +1,9 @@
 require "love"
 require "source/commander"
+require "source/bullet"
 
 C = 64
+RELOAD = 0.5
 
 function love.load()
 	player = Commander(416, 416)
@@ -51,6 +53,8 @@ function love.load()
 		{x = C*11.5, y = C*12.5},
 		{x = C*12.5, y = C*12.5},
 	}
+	projectiles = {}
+	reload = RELOAD
 end
 
 function love.update(dt)
@@ -69,6 +73,43 @@ function love.update(dt)
 	if love.keyboard.isDown("s") then
 		player:move("front", dt)
 	end
+
+	if reload >= RELOAD then
+		if love.keyboard.isDown("left") then	
+			if love.keyboard.isDown("up") then	
+				table.insert(projectiles, Bullet(player.position.x, player.position.y, -0.7, -0.7))
+			elseif love.keyboard.isDown("down") then	
+				table.insert(projectiles, Bullet(player.position.x, player.position.y, -0.7, 0.7))
+			else
+				table.insert(projectiles, Bullet(player.position.x, player.position.y, -1, 0))
+			end
+			reload = 0
+		elseif love.keyboard.isDown("right") then
+			if love.keyboard.isDown("up") then	
+				table.insert(projectiles, Bullet(player.position.x, player.position.y, 0.7, -0.7))
+			elseif love.keyboard.isDown("down") then	
+				table.insert(projectiles, Bullet(player.position.x, player.position.y, 0.7, 0.7))
+			else
+				table.insert(projectiles, Bullet(player.position.x, player.position.y, 1, 0))
+			end
+			reload = 0
+		elseif love.keyboard.isDown("up") then
+			table.insert(projectiles, Bullet(player.position.x, player.position.y, 0, -1))
+			reload = 0
+		elseif love.keyboard.isDown("down") then
+			table.insert(projectiles, Bullet(player.position.x, player.position.y, 0, 1))
+			reload = 0
+		end
+	else
+		reload = reload + dt
+	end
+
+	for i, v in pairs(projectiles) do
+		v:move(dt)
+		if v.position.x < 0 or v.position.x > 832 or v.position.y < 0 or v.position.y > 832 then
+			table.remove(projectiles, i)
+		end
+	end
 end
 
 function love.draw()
@@ -77,4 +118,9 @@ function love.draw()
 	for i, b in pairs(blocks) do
 		love.graphics.draw(block, b.x, b.y, 0, 1, 1, 32, 32)
 	end
+	love.graphics.setColor(1, 1, 0, 1)
+	for i, v in pairs(projectiles) do
+		v:draw()
+	end
+	love.graphics.setColor(1, 1, 1, 1)
 end

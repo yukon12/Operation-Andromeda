@@ -1,4 +1,4 @@
-VELOCITY = 150
+COMMANDER_V = 150
 
 function Commander(posX, posY)
 	return {
@@ -10,31 +10,31 @@ function Commander(posX, posY)
 			left = love.graphics.newImage("resources/commander_left.png"),
 			right = love.graphics.newImage("resources/commander_right.png")
 		},
-		move = function(this, direction, dt)
+		move = function(self, direction, dt)
 			if direction == "left" then
-				this.position.x = this.position.x - VELOCITY*dt
-				this.orientation = "left"
+				self.position.x = self.position.x - COMMANDER_V*dt
+				self.orientation = "left"
 			end
 			if direction == "right" then
-				this.position.x = this.position.x + VELOCITY*dt
-				this.orientation = "right"
+				self.position.x = self.position.x + COMMANDER_V*dt
+				self.orientation = "right"
 			end
 			if direction == "back" then
-				this.position.y = this.position.y - VELOCITY*dt
-				this.orientation = "back"
+				self.position.y = self.position.y - COMMANDER_V*dt
+				self.orientation = "back"
 			end
 			if direction == "front" then
-				this.position.y = this.position.y + VELOCITY*dt
-				this.orientation = "front"
+				self.position.y = self.position.y + COMMANDER_V*dt
+				self.orientation = "front"
 			end
 
-			this.position.x = math.max(this.position.x, 96)
-			this.position.x = math.min(this.position.x, 734)
-			this.position.y = math.max(this.position.y, 96)
-			this.position.y = math.min(this.position.y, 734)
+			self.position.x = math.max(self.position.x, 96)
+			self.position.x = math.min(self.position.x, 734)
+			self.position.y = math.max(self.position.y, 96)
+			self.position.y = math.min(self.position.y, 734)
 		end,
-		draw = function(this)
-			love.graphics.draw(this.texture[this.orientation], this.position.x, this.position.y, 0, 1, 1, 32, 32)
+		draw = function(self)
+			love.graphics.draw(self.texture[self.orientation], self.position.x, self.position.y, 0, 1, 1, 32, 32)
 		end
 	}
 end
