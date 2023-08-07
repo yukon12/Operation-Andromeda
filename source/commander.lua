@@ -29,9 +29,9 @@ function Commander(posX, posY)
 			end
 
 			this.position.x = math.max(this.position.x, 96)
-			this.position.x = math.min(this.position.x, 800)
+			this.position.x = math.min(this.position.x, 734)
 			this.position.y = math.max(this.position.y, 96)
-			this.position.y = math.min(this.position.y, 800)
+			this.position.y = math.min(this.position.y, 734)
 		end,
 		draw = function(this)
 			love.graphics.draw(this.texture[this.orientation], this.position.x, this.position.y, 0, 1, 1, 32, 32)
