@@ -1,5 +1,3 @@
-COMMANDER_V = 150
-
 function Commander(posX, posY)
 	return {
 		position = {x = posX, y = posY},

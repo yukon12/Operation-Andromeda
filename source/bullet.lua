@@ -1,5 +1,3 @@
-BULLET_V = 500
-
 function Bullet(posX, posY, dirX, dirY)
 	return {
 		position = {x = posX, y = posY},
