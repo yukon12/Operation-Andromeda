@@ -7,25 +7,43 @@ require "source/menu"
 
 function love.load()
 	math.randomseed(os.time())
+
 	player = Commander(416, 416)
 	blockTexture = love.graphics.newImage("resources/block.png")
 	enemyTexture = love.graphics.newImage("resources/enemy.png")
 	logoTexture = love.graphics.newImage("resources/logo.png")
+	music = love.audio.newSource("resources/song.wav", "static")
+	laser = love.audio.newSource("resources/laser.mp3", "static")
 	projectiles = {}
 	enemies = {}
 	reload = RELOAD
 	enemyTimer = ENEMYTIMER
-	game = false
 	menu = Menu(logoTexture)
+	game = false
+	playMusic = true
 end
 
 function love.keyreleased(key)
 	if key == "escape" then
 		game = not game
 	end
+
+	if key == "m" and not game then
+		if playMusic then
+			playMusic = false
+			music:stop()
+		else
+			playMusic = true
+			music:play()
+		end
+	end
 end
 
 function love.update(dt)
+	if not music:isPlaying() and playMusic then
+		music:play()
+	end
+
 	if game then
 		if love.keyboard.isDown("a") then
 			player:move("left", dt)
@@ -52,6 +70,7 @@ function love.update(dt)
 					table.insert(projectiles, Bullet(player.position.x, player.position.y, -1, 0))
 				end
 				reload = 0
+				laser:play()
 			elseif love.keyboard.isDown("right") then
 				if love.keyboard.isDown("up") then	
 					table.insert(projectiles, Bullet(player.position.x, player.position.y, 0.7, -0.7))
@@ -61,12 +80,14 @@ function love.update(dt)
 					table.insert(projectiles, Bullet(player.position.x, player.position.y, 1, 0))
 				end
 				reload = 0
+				laser:play()
 			elseif love.keyboard.isDown("up") then
 				table.insert(projectiles, Bullet(player.position.x, player.position.y, 0, -1))
 				reload = 0
 			elseif love.keyboard.isDown("down") then
 				table.insert(projectiles, Bullet(player.position.x, player.position.y, 0, 1))
 				reload = 0
+				laser:play()
 			end
 		else
 			reload = reload + dt
