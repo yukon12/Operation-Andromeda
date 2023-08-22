@@ -1,17 +1,16 @@
-function Menu(logo)
-	return {
+function LevelChoose()
+    return {
 		chosen = 1,
 		optionTexts = {
-			"TITLE SCREEN",
-			"CHANGE LEVEL",
-			"EXIT"
+			"LEVEL 1",
+            "LEVEL 2",
+            "LEVEL 3",
+            "LEVEL 4",
+            "LEVEL 5"
 		},
 		smallFont = love.graphics.newFont(24),
 		bigFont = love.graphics.newFont(32),
 		draw = function(self)
-			love.graphics.setColor(0.0, 0.0, 1.0, 1.0)
-			love.graphics.rectangle("fill", 200, 248, 400, 150)
-			love.graphics.setColor(1.0, 1.0, 1.0, 1.0)
 			for i = 1, table.getn(self.optionTexts) do
 				local f
 				if self.chosen == i then

@@ -7,6 +7,7 @@ function Bullet(posX, posY, dirX, dirY)
 			self.position.y = self.position.y + self.vector.y * dt * BULLET_V
 		end,
 		draw = function(self)
+			love.graphics.setColor(1, 1, 0, 1)
 			love.graphics.circle("fill", self.position.x, self.position.y, 5)
 		end
 	}

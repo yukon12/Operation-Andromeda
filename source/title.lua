@@ -1,17 +1,17 @@
-function Menu(logo)
-	return {
+function Title(logoTexture)
+    return {
+        logoTexture = logoTexture,
 		chosen = 1,
 		optionTexts = {
-			"TITLE SCREEN",
-			"CHANGE LEVEL",
+			"CONTINUE",
+			"MUTE MUSIC",
 			"EXIT"
 		},
 		smallFont = love.graphics.newFont(24),
 		bigFont = love.graphics.newFont(32),
 		draw = function(self)
-			love.graphics.setColor(0.0, 0.0, 1.0, 1.0)
-			love.graphics.rectangle("fill", 200, 248, 400, 150)
-			love.graphics.setColor(1.0, 1.0, 1.0, 1.0)
+			love.graphics.print("version "..VERSION)
+			love.graphics.draw(self.logoTexture, 416, 288, 0, 1, 1, 160, 160)
 			for i = 1, table.getn(self.optionTexts) do
 				local f
 				if self.chosen == i then
@@ -19,7 +19,7 @@ function Menu(logo)
 				else
 					f = self.smallFont
 				end
-				love.graphics.printf(self.optionTexts[i], f, love.math.newTransform(216, 200+48*i), 400, "center")
+				love.graphics.printf(self.optionTexts[i], f, love.math.newTransform(216, 452+48*i), 400, "center")
 			end
 		end,
 		moveUp = function(self)

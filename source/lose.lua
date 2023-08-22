@@ -1,17 +1,19 @@
-function Menu(logo)
-	return {
+function Lose()
+    return {
 		chosen = 1,
 		optionTexts = {
-			"TITLE SCREEN",
-			"CHANGE LEVEL",
-			"EXIT"
+			"TRY AGAIN",
+            "TITLE SCREEN",
+            "PICK DIFFERENT LEVEL",
+            "EXIT"
 		},
 		smallFont = love.graphics.newFont(24),
 		bigFont = love.graphics.newFont(32),
+        enormousFont = love.graphics.newFont(64),
 		draw = function(self)
-			love.graphics.setColor(0.0, 0.0, 1.0, 1.0)
-			love.graphics.rectangle("fill", 200, 248, 400, 150)
-			love.graphics.setColor(1.0, 1.0, 1.0, 1.0)
+            love.graphics.setColor(1.0, 0.0, 0.0, 1.0)
+            love.graphics.printf("YOU HAVE LOST", self.enormousFont, love.math.newTransform(216, 150), 400, "center")
+            love.graphics.setColor(1.0, 1.0, 1.0, 1.0)
 			for i = 1, table.getn(self.optionTexts) do
 				local f
 				if self.chosen == i then
@@ -19,7 +21,7 @@ function Menu(logo)
 				else
 					f = self.smallFont
 				end
-				love.graphics.printf(self.optionTexts[i], f, love.math.newTransform(216, 200+48*i), 400, "center")
+				love.graphics.printf(self.optionTexts[i], f, love.math.newTransform(216, 296+48*i), 400, "center")
 			end
 		end,
 		moveUp = function(self)

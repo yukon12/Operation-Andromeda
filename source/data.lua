@@ -1,13 +1,11 @@
 VERSION = "0.5"
 
 C = 64
-RELOAD = 0.75
-ENEMYTIMER = 1
 ENEMY_V = 150
 COMMANDER_V = 150
 BULLET_V = 500
 
-blocks = {
+cornerCoords = {
 	{x = C*0.5, y = C*0.5},
 	{x = C*0.5, y = C*1.5},
 	{x = C*0.5, y = C*2.5},
@@ -53,7 +51,7 @@ blocks = {
 	{x = C*12.5, y = C*12.5},
 }
 
-pep = {
+middleCoords = {
 	{x = C*5.5, y = C*0.5},
 	{x = C*6.5, y = C*0.5},
 	{x = C*7.5, y = C*0.5},
