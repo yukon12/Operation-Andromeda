@@ -2,8 +2,10 @@ VERSION = "0.8"
 
 C = 64
 ENEMY_V = 150
+BIGENEMY_V = 50
 COMMANDER_V = 150
 BULLET_V = 500
+LASER_V = 250
 
 cornerCoords = {
 	{x = C*0.5, y = C*0.5},

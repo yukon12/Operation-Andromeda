@@ -2,13 +2,17 @@ require "love"
 require "source/data"
 require "source/commander"
 require "source/bullet"
-require "source/enemy"
-require "source/menu"
 require "source/timer"
+require "source/laser"
+require "source/enemy"
+require "source/bigEnemy"
+require "source/menu"
 require "source/title"
 require "source/levelChoose"
 require "source/lose"
 require "source/win"
+
+DEV = true
 
 function restart()
 	player.position.x = 416
@@ -17,6 +21,16 @@ function restart()
 	projectiles = {}
 	enemies = {}
 	toBeRemoved = {}
+	lasers = {}
+
+	if level == 1 then
+		enemyTimer = Timer(1)
+	elseif level == 2 then
+		enemyTimer = Timer(1.5)
+	elseif level == 3 then
+		enemyTimer = Timer(4)
+	end
+
 	enemyTimer:reset()
 	reloadTimer:reset()
 	winTimer:reset()
@@ -34,7 +48,8 @@ function love.load()
 	blockTexture = love.graphics.newImage("resources/block.png")
 	enemyTexture = {
 		love.graphics.newImage("resources/enemy1.png"),
-		love.graphics.newImage("resources/enemy2.png")
+		love.graphics.newImage("resources/enemy2.png"),
+		love.graphics.newImage("resources/enemy3.png")
 	}
 	logoTexture = love.graphics.newImage("resources/logo.png")
 	lightningTexture = love.graphics.newImage("resources/lightning.png")
@@ -59,6 +74,7 @@ function love.load()
 	enemies = {}
 	toBeRemoved = {}
 	lightnings = {}
+	lasers = {}
 
 	mode = "title"
 	level = 0
@@ -72,11 +88,21 @@ function love.load()
 		false,
 		false
 	}
+
+	if DEV then
+		unlocked = {
+			true,
+			true,
+			true,
+			true,
+			true
+		}
+	end
 end
 
 function love.keypressed(key)
-	if key == "u" then
-		winTimer.value = 10
+	if key == "u" and DEV == true then
+		winTimer.value = 3
 	end
 
 	if mode == "title" then
@@ -255,18 +281,27 @@ function love.update(dt)
 			end
 		end
 
-		if enemyTimer:update(dt) then
-			enemyTimer:reset()
-			if level == 1 then
-				local r = math.random(1, 52)
-				if r <= 12 then
+		if level == 1 or level == 2 or level == 3 then
+			if enemyTimer:update(dt) then
+				enemyTimer:reset()
+				if level == 1 then
+					local r = math.random(1, 52)
+					if r <= 12 then
+						table.insert(enemies, Enemy(middleCoords[r].x, middleCoords[r].y, enemyTexture[level]))
+					else
+						table.insert(enemies, Enemy(cornerCoords[r-12].x, cornerCoords[r-12].y, enemyTexture[level]))
+					end
+				elseif level == 2 then
+					local r = math.random(1, 12)
 					table.insert(enemies, Enemy(middleCoords[r].x, middleCoords[r].y, enemyTexture[level]))
-				else
-					table.insert(enemies, Enemy(cornerCoords[r-12].x, cornerCoords[r-12].y, enemyTexture[level]))
+				elseif level == 3 then
+					local r = math.random(1, 52)
+					if r <= 12 then
+						table.insert(enemies, BigEnemy(middleCoords[r].x, middleCoords[r].y, enemyTexture[level], lasers))
+					else
+						table.insert(enemies, BigEnemy(cornerCoords[r-12].x, cornerCoords[r-12].y, enemyTexture[level], lasers))
+					end
 				end
-			elseif level == 2 then
-				local r = math.random(1, 12)
-				table.insert(enemies, Enemy(middleCoords[r].x, middleCoords[r].y, enemyTexture[level]))
 			end
 		end
 
@@ -289,9 +324,18 @@ function love.update(dt)
 			local valid = true
 			for i, v in pairs(projectiles) do
 				if math.abs(enemies[_i].position.x-v.position.x)<C/2 and math.abs(enemies[_i].position.y-v.position.y)<C/2 then
-					valid = false
-					table.insert(toBeRemoved, i)
-					break
+					if level == 1 or level == 2 then
+						valid = false
+						table.insert(toBeRemoved, i)
+						break
+					elseif level == 3 then
+						enemies[_i].health = enemies[_i].health - 1
+						table.insert(toBeRemoved, i)
+						if enemies[_i].health <= 0 then
+							valid = false
+							break
+						end
+					end
 				end
 			end
 
@@ -325,6 +369,23 @@ function love.update(dt)
 				lightning = lightningCoords[r]
 			end
 		end
+
+		if level == 3 then
+			for i, v in pairs(lasers) do
+				v:move(dt)
+				if math.abs(v.position.x-v.target.x)<5 and math.abs(v.position.y-v.target.y)<5 then
+					table.insert(toBeRemoved, i)
+				end
+				if math.abs(v.position.x-player.position.x) < 32 and math.abs(v.position.y-player.position.y) < 32 then
+					mode = "lose"
+				end
+			end
+
+			while table.getn(toBeRemoved) > 0 do
+				table.remove(lasers, toBeRemoved[1])
+				table.remove(toBeRemoved, 1)
+			end
+		end
 	end
 end
 
@@ -340,12 +401,17 @@ function love.draw()
 			love.graphics.stencil(flashlight, "replace", 1, false)
 			love.graphics.setColor(0.0, 0.1, 0.2)
 			flashlight()
+		elseif level == 3 then
+			love.graphics.clear(0.2, 0.1, 0.8)
+			for i, v in pairs(lasers) do
+				v:draw()
+			end
 		end
 
 		love.graphics.setColor(1.0, 1.0, 1.0)
 		player:draw()
 		for i, b in pairs(cornerCoords) do
-			if level == 1 then
+			if level == 1 or level == 3 then
 				love.graphics.draw(xTexture, b.x, b.y, 0, 1, 1, 32, 32)
 			elseif level == 2 then
 				love.graphics.draw(blockTexture, b.x, b.y, 0, 1, 1, 32, 32)

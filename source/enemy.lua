@@ -1,7 +1,7 @@
-function Enemy(posX, posY, txtPointer)
+function Enemy(posX, posY, texture)
 	return {
 		position = {x = posX, y = posY},
-		texture = txtPointer,
+		texture = texture,
 		color = {r = 1.0, g = 1.0, b = 1.0},
 		move = function(self, dt, playerPosition)
 			local distance = math.sqrt((self.position.x-playerPosition.x)*(self.position.x-playerPosition.x)+(self.position.y-playerPosition.y)*(self.position.y-playerPosition.y))
