@@ -1,4 +1,4 @@
-VERSION = "0.5"
+VERSION = "0.8"
 
 C = 64
 ENEMY_V = 150
@@ -67,4 +67,11 @@ middleCoords = {
 	{x = C*12.5, y = C*5.5},
 	{x = C*12.5, y = C*6.5},
 	{x = C*12.5, y = C*7.5},
+}
+
+lightningCoords = {
+	{x = C*2.5, y = C*2.5},
+	{x = C*2.5, y = C*10.5},
+	{x = C*10.5, y = C*2.5},
+	{x = C*10.5, y = C*10.5}
 }

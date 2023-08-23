@@ -8,22 +8,37 @@ require "source/timer"
 require "source/title"
 require "source/levelChoose"
 require "source/lose"
+require "source/win"
 
 function restart()
+	player.position.x = 416
+	player.position.y = 416
+	lightning = {x = 0, y = 0}
 	projectiles = {}
 	enemies = {}
 	toBeRemoved = {}
 	enemyTimer:reset()
 	reloadTimer:reset()
 	winTimer:reset()
+	energyTimer:reset()
+	isLightning = false
+end
+
+function flashlight()
+	love.graphics.circle("fill", player.position.x, player.position.y, energyTimer.value*50+100)
 end
 
 function love.load()
 	math.randomseed(os.time())
 
 	blockTexture = love.graphics.newImage("resources/block.png")
-	enemyTexture = love.graphics.newImage("resources/enemy.png")
+	enemyTexture = {
+		love.graphics.newImage("resources/enemy1.png"),
+		love.graphics.newImage("resources/enemy2.png")
+	}
 	logoTexture = love.graphics.newImage("resources/logo.png")
+	lightningTexture = love.graphics.newImage("resources/lightning.png")
+	xTexture = love.graphics.newImage("resources/x.png")
 	musicSound = love.audio.newSource("resources/song.wav", "static")
 	laserSound = love.audio.newSource("resources/laser.mp3", "static")
 
@@ -31,23 +46,39 @@ function love.load()
 	menu = Menu(logoTexture)
 	title = Title(logoTexture)
 	lose = Lose()
+	win = Win()
 	levelChoose = LevelChoose()
-	enemyTimer = Timer(1)
+	enemyTimer = Timer(1.5)
 	reloadTimer = Timer(0.5)
 	winTimer = Timer(300)
+	energyTimer = Timer(10)
 
 	musicSound:setVolume(0.5)
 
 	projectiles = {}
 	enemies = {}
 	toBeRemoved = {}
+	lightnings = {}
 
 	mode = "title"
 	level = 0
 	playMusic = true
+	isLightning = false
+
+	unlocked = {
+		true,
+		false,
+		false,
+		false,
+		false
+	}
 end
 
 function love.keypressed(key)
+	if key == "u" then
+		winTimer.value = 10
+	end
+
 	if mode == "title" then
 		if key == "w" or key == "up" then
 			title:moveUp()
@@ -83,9 +114,14 @@ function love.keypressed(key)
 			levelChoose:moveDown()
 		end
 		if key == "d" or key == "right" or key == "return" then
-			mode = "game"
-			level = levelChoose.chosen
-			restart()
+			if unlocked[levelChoose.chosen] then
+				mode = "game"
+				level = levelChoose.chosen
+				restart()
+			end
+		end
+		if key == "a" or key == "left" or key == "escape" then
+			mode = "title"
 		end
 		return
 	end
@@ -106,6 +142,29 @@ function love.keypressed(key)
 			elseif lose.chosen == 3 then
 				mode = "levelChoose"
 			elseif lose.chosen == 4 then
+				love.event.quit()
+			end
+		end
+		return
+	end
+
+	if mode == "win" then
+		if key == "w" or key == "up" then
+			win:moveUp()
+		end
+		if key == "s" or key == "down" then
+			win:moveDown()
+		end
+		if key == "d" or key == "right" or key == "return" then
+			if win.chosen == 1 then
+				mode = "game"
+				level = level + 1
+				level = math.min(level, 5)
+				unlocked[level] = true
+				restart()
+			elseif win.chosen == 2 then
+				mode = "title"
+			elseif win.chosen == 3 then
 				love.event.quit()
 			end
 		end
@@ -139,7 +198,6 @@ function love.keypressed(key)
 				love.event.quit()
 			end
 		end
-
 		return
 	end
 end
@@ -149,8 +207,11 @@ function love.update(dt)
 		musicSound:play()
 	end
 
-	if mode == "title" then
-	elseif mode == "game" then
+	if mode == "game" then
+		if winTimer:update(dt) then
+			mode = "win"
+		end
+
 		if love.keyboard.isDown("a") then
 			player:move("left", dt)
 		end
@@ -196,8 +257,17 @@ function love.update(dt)
 
 		if enemyTimer:update(dt) then
 			enemyTimer:reset()
-			local r = math.random(1, 12)
-			table.insert(enemies, Enemy(middleCoords[r].x, middleCoords[r].y, enemyTexture))
+			if level == 1 then
+				local r = math.random(1, 52)
+				if r <= 12 then
+					table.insert(enemies, Enemy(middleCoords[r].x, middleCoords[r].y, enemyTexture[level]))
+				else
+					table.insert(enemies, Enemy(cornerCoords[r-12].x, cornerCoords[r-12].y, enemyTexture[level]))
+				end
+			elseif level == 2 then
+				local r = math.random(1, 12)
+				table.insert(enemies, Enemy(middleCoords[r].x, middleCoords[r].y, enemyTexture[level]))
+			end
 		end
 
 		for i, v in pairs(projectiles) do
@@ -238,19 +308,51 @@ function love.update(dt)
 			table.remove(projectiles, toBeRemoved[1])
 			table.remove(toBeRemoved, 1)
 		end
-	elseif mode == "menu" then
-		if love.keyboard.isDown("q") then
-			love.event.quit()
+
+		if level == 2 then
+			energyTimer:update(dt)
+
+			if isLightning then
+				if math.abs(lightning.x-player.position.x) < 64 and math.abs(lightning.y-player.position.y) < 64 then
+					isLightning = false
+					energyTimer:reset()
+				end
+			end
+
+			if not isLightning then
+				local r = math.random(1, 4)
+				isLightning = true
+				lightning = lightningCoords[r]
+			end
 		end
 	end
 end
 
 function love.draw()
+	love.graphics.clear(0.0, 0.0, 0.0)
+
 	if mode == "menu" or mode == "game" then
-		love.graphics.clear(0.0, 0.1, 0.2)
+		if level == 1 then
+			love.graphics.clear(0.5, 0.4, 0.2)
+		elseif level == 2 then
+			love.graphics.clear(0.0, 0.0, 0.0)
+			love.graphics.setStencilTest("greater", 0)
+			love.graphics.stencil(flashlight, "replace", 1, false)
+			love.graphics.setColor(0.0, 0.1, 0.2)
+			flashlight()
+		end
+
+		love.graphics.setColor(1.0, 1.0, 1.0)
 		player:draw()
 		for i, b in pairs(cornerCoords) do
-			love.graphics.draw(blockTexture, b.x, b.y, 0, 1, 1, 32, 32)
+			if level == 1 then
+				love.graphics.draw(xTexture, b.x, b.y, 0, 1, 1, 32, 32)
+			elseif level == 2 then
+				love.graphics.draw(blockTexture, b.x, b.y, 0, 1, 1, 32, 32)
+			end
+		end
+		for i, b in pairs(middleCoords) do
+			love.graphics.draw(xTexture, b.x, b.y, 0, 1, 1, 32, 32)
 		end
 		for i, v in pairs(enemies) do
 			v:draw()
@@ -258,7 +360,16 @@ function love.draw()
 		for i, v in pairs(projectiles) do
 			v:draw()
 		end
-		love.graphics.setColor(1, 1, 1, 1)
+
+		love.graphics.setStencilTest()
+
+		love.graphics.setColor(0.0, 1.0, 0.0)
+		love.graphics.printf(math.ceil(winTimer.value), love.graphics.newFont(32), love.math.newTransform(216, 64), 400, "center")
+
+		love.graphics.setColor(1.0, 1.0, 1.0)
+		if level == 2 and isLightning then
+			love.graphics.draw(lightningTexture, lightning.x, lightning.y, 0, 1, 1, 32, 32)
+		end
 	end
 
 	if mode == "menu" then
@@ -270,10 +381,14 @@ function love.draw()
 	end
 
 	if mode == "levelChoose" then
-		levelChoose:draw()
+		levelChoose:draw(unlocked)
 	end
 
 	if mode == "lose" then
 		lose:draw()
+	end
+
+	if mode == "win" then
+		win:draw()
 	end
 end

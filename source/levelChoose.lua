@@ -10,13 +10,18 @@ function LevelChoose()
 		},
 		smallFont = love.graphics.newFont(24),
 		bigFont = love.graphics.newFont(32),
-		draw = function(self)
+		draw = function(self, unlocked)
 			for i = 1, table.getn(self.optionTexts) do
 				local f
 				if self.chosen == i then
 					f = self.bigFont
 				else
 					f = self.smallFont
+				end
+				if unlocked[i] then
+					love.graphics.setColor(1.0, 1.0, 1.0)
+				else
+					love.graphics.setColor(0.5, 0.5, 0.5)
 				end
 				love.graphics.printf(self.optionTexts[i], f, love.math.newTransform(216, 200+48*i), 400, "center")
 			end

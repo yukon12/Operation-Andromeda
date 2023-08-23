@@ -2,7 +2,7 @@ function Enemy(posX, posY, txtPointer)
 	return {
 		position = {x = posX, y = posY},
 		texture = txtPointer,
-		color = {r = math.random(0,100)/100, g = math.random(0,100)/100, b = math.random(0,100)/100},
+		color = {r = 1.0, g = 1.0, b = 1.0},
 		move = function(self, dt, playerPosition)
 			local distance = math.sqrt((self.position.x-playerPosition.x)*(self.position.x-playerPosition.x)+(self.position.y-playerPosition.y)*(self.position.y-playerPosition.y))
 			self.position.x = self.position.x - (self.position.x-playerPosition.x)/distance*ENEMY_V*dt
