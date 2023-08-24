@@ -13,7 +13,7 @@ require "source/lose"
 require "source/win"
 require "source/mag"
 
-DEV = true
+DEV = false
 
 function restart()
 	player.position.x = 416
@@ -33,6 +33,8 @@ function restart()
 		enemyTimer = Timer(4)
 	elseif level == 4 then
 		enemyTimer = Timer(6)
+	elseif level == 5 then
+		enemyTimer = Timer(1)
 	end
 
 	enemyTimer:reset()
@@ -55,12 +57,15 @@ function love.load()
 		love.graphics.newImage("resources/enemy1.png"),
 		love.graphics.newImage("resources/enemy2.png"),
 		love.graphics.newImage("resources/enemy3.png"),
-		love.graphics.newImage("resources/enemy4.png")
+		love.graphics.newImage("resources/enemy4.png"),
+		love.graphics.newImage("resources/enemy5.png")
 	}
 	logoTexture = love.graphics.newImage("resources/logo.png")
 	lightningTexture = love.graphics.newImage("resources/lightning.png")
 	xTexture = love.graphics.newImage("resources/x.png")
 	magTexture = love.graphics.newImage("resources/mag.png")
+	crateTexture = love.graphics.newImage("resources/crate.png")
+	portalTexture = love.graphics.newImage("resources/portal.png")
 	musicSound = love.audio.newSource("resources/song.wav", "static")
 	laserSound = love.audio.newSource("resources/laser.mp3", "static")
 
@@ -249,15 +254,43 @@ function love.update(dt)
 
 		if love.keyboard.isDown("a") then
 			player:move("left", dt)
+			if level == 5 then
+				if (player.position.x > C*4.5 and player.position.x < C*5.5) and (player.position.y > C*3.5 and player.position.y < C*5.5) then
+					player.position.x = C*5.5
+				elseif (player.position.x > C*4.5 and player.position.x < C*5.5) and (player.position.y > C*7.5 and player.position.y < C*9.5) then
+					player.position.x = C*5.5
+				end
+			end
 		end
 		if love.keyboard.isDown("d") then
 			player:move("right", dt)
+			if level == 5 then
+				if (player.position.x > C*7.5 and player.position.x < C*8.5) and (player.position.y > C*3.5 and player.position.y < C*5.5) then
+					player.position.x = C*7.5
+				elseif (player.position.x > C*7.5 and player.position.x < C*8.5) and (player.position.y > C*7.5 and player.position.y < C*9.5) then
+					player.position.x = C*7.5
+				end
+			end
 		end
 		if love.keyboard.isDown("w") then
 			player:move("back", dt)
+			if level == 5 then
+				if (player.position.y > C*4.5 and player.position.y < C*5.5) and (player.position.x < C*5.5 or player.position.x > C*7.5) then
+					player.position.y = C*5.5
+				elseif (player.position.y > C*8.5 and player.position.y < C*9.5) and (player.position.x < C*5.5 or player.position.x > C*7.5) then
+						player.position.y = C*9.5
+				end
+			end
 		end
 		if love.keyboard.isDown("s") then
 			player:move("front", dt)
+			if level == 5 then
+				if (player.position.y > C*3.5 and player.position.y < C*4.5) and (player.position.x < C*5.5 or player.position.x > C*7.5) then
+					player.position.y = C*3.5
+				elseif (player.position.y > C*7.5 and player.position.y < C*8.5) and (player.position.x < C*5.5 or player.position.x > C*7.5) then
+						player.position.y = C*7.5
+				end
+			end
 		end
 
 		if reloadTimer:update(dt) and (not level == 4 or ammo > 0) then
@@ -312,6 +345,9 @@ function love.update(dt)
 				else
 					table.insert(enemies, BigEnemy(cornerCoords[r-12].x, cornerCoords[r-12].y, enemyTexture[level], lasers))
 				end
+			elseif level == 5 then
+				local r = math.random(1, 4)
+				table.insert(enemies, Enemy(fourCoords[r].x, fourCoords[r].y, enemyTexture[level]))
 			end
 		end
 
@@ -321,6 +357,25 @@ function love.update(dt)
 			if v.position.x < 64 or v.position.x > 768 or v.position.y < 64 or v.position.y > 764 then
 				table.insert(toBeRemoved, i)
 			end
+
+			if level == 5 then
+				if v.position.x > C*0 and v.position.x < C*5 and v.position.y > C*4 and v.position.y < C*5 then
+					table.insert(toBeRemoved, i)
+				elseif v.position.x > C*0 and v.position.x < C*5 and v.position.y > C*8 and v.position.y < C*9 then
+					table.insert(toBeRemoved, i)
+				elseif v.position.x > C*8 and v.position.x < C*12 and v.position.y > C*4 and v.position.y < C*5 then
+					table.insert(toBeRemoved, i)
+				elseif v.position.x > C*8 and v.position.x < C*12 and v.position.y > C*8 and v.position.y < C*9 then
+					table.insert(toBeRemoved, i)
+				end
+			end
+		end
+
+		--change
+		table.sort(toBeRemoved, function(a,b) return a > b end)
+		while table.getn(toBeRemoved) > 0 do
+			table.remove(projectiles, toBeRemoved[1])
+			table.remove(toBeRemoved, 1)
 		end
 		
 		local _i = 1
@@ -335,7 +390,7 @@ function love.update(dt)
 			local valid = true
 			for i, v in pairs(projectiles) do
 				if math.abs(enemies[_i].position.x-v.position.x)<C/2 and math.abs(enemies[_i].position.y-v.position.y)<C/2 then
-					if level == 1 or level == 2 or level == 4 then
+					if level == 1 or level == 2 or level == 4 or level == 5 then
 						valid = false
 						table.insert(toBeRemoved, i)
 						if level == 4 then
@@ -380,7 +435,7 @@ function love.update(dt)
 			if not isLightning then
 				local r = math.random(1, 4)
 				isLightning = true
-				lightning = lightningCoords[r]
+				lightning = fourCoords[r]
 			end
 		end
 
@@ -452,6 +507,14 @@ function love.draw()
 				local s = math.abs((v.timer.value-math.floor(v.timer.value))-0.5)/4+0.75
 				love.graphics.draw(magTexture, v.position.x, v.position.y, 0, s, s, 32)
 			end
+		elseif level == 5 then
+			love.graphics.clear(0.6, 0.1, 0.1)
+			for i, v in pairs(fourCoords) do
+				love.graphics.draw(portalTexture, v.x, v.y, 0, 1, 1, 32, 32)
+			end
+			for i, v in pairs(crateCoords) do
+				love.graphics.draw(crateTexture, v.x, v.y, 0, 1, 1, 32, 32)
+			end
 		end
 
 		love.graphics.setColor(1.0, 1.0, 1.0)
@@ -461,10 +524,16 @@ function love.draw()
 				love.graphics.draw(xTexture, b.x, b.y, 0, 1, 1, 32, 32)
 			elseif level == 2 or level == 4 then
 				love.graphics.draw(blockTexture, b.x, b.y, 0, 1, 1, 32, 32)
+			elseif level == 5 then
+				love.graphics.draw(crateTexture, b.x, b.y, 0, 1, 1, 32, 32)
 			end
 		end
 		for i, b in pairs(middleCoords) do
-			love.graphics.draw(xTexture, b.x, b.y, 0, 1, 1, 32, 32)
+			if level == 5 then
+				love.graphics.draw(crateTexture, b.x, b.y, 0, 1, 1, 32, 32)
+			else
+				love.graphics.draw(xTexture, b.x, b.y, 0, 1, 1, 32, 32)
+			end
 		end
 		for i, v in pairs(enemies) do
 			v:draw()
