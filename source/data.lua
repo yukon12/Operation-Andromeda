@@ -1,4 +1,4 @@
-VERSION = "0.8"
+VERSION = "0.8.2"
 
 C = 64
 ENEMY_V = 150

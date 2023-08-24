@@ -11,6 +11,7 @@ require "source/title"
 require "source/levelChoose"
 require "source/lose"
 require "source/win"
+require "source/mag"
 
 DEV = true
 
@@ -22,6 +23,7 @@ function restart()
 	enemies = {}
 	toBeRemoved = {}
 	lasers = {}
+	mags = {}
 
 	if level == 1 then
 		enemyTimer = Timer(1)
@@ -29,6 +31,8 @@ function restart()
 		enemyTimer = Timer(1.5)
 	elseif level == 3 then
 		enemyTimer = Timer(4)
+	elseif level == 4 then
+		enemyTimer = Timer(6)
 	end
 
 	enemyTimer:reset()
@@ -36,6 +40,7 @@ function restart()
 	winTimer:reset()
 	energyTimer:reset()
 	isLightning = false
+	ammo = 2
 end
 
 function flashlight()
@@ -49,11 +54,13 @@ function love.load()
 	enemyTexture = {
 		love.graphics.newImage("resources/enemy1.png"),
 		love.graphics.newImage("resources/enemy2.png"),
-		love.graphics.newImage("resources/enemy3.png")
+		love.graphics.newImage("resources/enemy3.png"),
+		love.graphics.newImage("resources/enemy4.png")
 	}
 	logoTexture = love.graphics.newImage("resources/logo.png")
 	lightningTexture = love.graphics.newImage("resources/lightning.png")
 	xTexture = love.graphics.newImage("resources/x.png")
+	magTexture = love.graphics.newImage("resources/mag.png")
 	musicSound = love.audio.newSource("resources/song.wav", "static")
 	laserSound = love.audio.newSource("resources/laser.mp3", "static")
 
@@ -75,11 +82,13 @@ function love.load()
 	toBeRemoved = {}
 	lightnings = {}
 	lasers = {}
+	mags = {}
 
 	mode = "title"
 	level = 0
 	playMusic = true
 	isLightning = false
+	ammo = 2
 
 	unlocked = {
 		true,
@@ -251,7 +260,7 @@ function love.update(dt)
 			player:move("front", dt)
 		end
 
-		if reloadTimer:update(dt) then
+		if reloadTimer:update(dt) and (not level == 4 or ammo > 0) then
 			local dirL = love.keyboard.isDown("left")
 			local dirR = love.keyboard.isDown("right")
 			local dirU = love.keyboard.isDown("up")
@@ -260,6 +269,9 @@ function love.update(dt)
 			if dirL or dirR or dirU or dirD then
 				reloadTimer:reset()
 				laserSound:play()
+				if level == 4 then
+					ammo = ammo - 1
+				end
 			end
 
 			if dirL and not dirR and not dirU and not dirD then
@@ -281,29 +293,28 @@ function love.update(dt)
 			end
 		end
 
-		if level == 1 or level == 2 or level == 3 then
-			if enemyTimer:update(dt) then
-				enemyTimer:reset()
-				if level == 1 then
-					local r = math.random(1, 52)
-					if r <= 12 then
-						table.insert(enemies, Enemy(middleCoords[r].x, middleCoords[r].y, enemyTexture[level]))
-					else
-						table.insert(enemies, Enemy(cornerCoords[r-12].x, cornerCoords[r-12].y, enemyTexture[level]))
-					end
-				elseif level == 2 then
-					local r = math.random(1, 12)
+		if enemyTimer:update(dt) then
+			enemyTimer:reset()
+			if level == 1 then
+				local r = math.random(1, 52)
+				if r <= 12 then
 					table.insert(enemies, Enemy(middleCoords[r].x, middleCoords[r].y, enemyTexture[level]))
-				elseif level == 3 then
-					local r = math.random(1, 52)
-					if r <= 12 then
-						table.insert(enemies, BigEnemy(middleCoords[r].x, middleCoords[r].y, enemyTexture[level], lasers))
-					else
-						table.insert(enemies, BigEnemy(cornerCoords[r-12].x, cornerCoords[r-12].y, enemyTexture[level], lasers))
-					end
+				else
+					table.insert(enemies, Enemy(cornerCoords[r-12].x, cornerCoords[r-12].y, enemyTexture[level]))
+				end
+			elseif level == 2  or level == 4 then
+				local r = math.random(1, 12)
+				table.insert(enemies, Enemy(middleCoords[r].x, middleCoords[r].y, enemyTexture[level]))
+			elseif level == 3 then
+				local r = math.random(1, 52)
+				if r <= 12 then
+					table.insert(enemies, BigEnemy(middleCoords[r].x, middleCoords[r].y, enemyTexture[level], lasers))
+				else
+					table.insert(enemies, BigEnemy(cornerCoords[r-12].x, cornerCoords[r-12].y, enemyTexture[level], lasers))
 				end
 			end
 		end
+
 
 		for i, v in pairs(projectiles) do
 			v:move(dt)
@@ -324,9 +335,12 @@ function love.update(dt)
 			local valid = true
 			for i, v in pairs(projectiles) do
 				if math.abs(enemies[_i].position.x-v.position.x)<C/2 and math.abs(enemies[_i].position.y-v.position.y)<C/2 then
-					if level == 1 or level == 2 then
+					if level == 1 or level == 2 or level == 4 then
 						valid = false
 						table.insert(toBeRemoved, i)
+						if level == 4 then
+							table.insert(mags, Mag(enemies[_i].position.x, enemies[_i].position.y))
+						end
 						break
 					elseif level == 3 then
 						enemies[_i].health = enemies[_i].health - 1
@@ -381,8 +395,28 @@ function love.update(dt)
 				end
 			end
 
+			table.sort(toBeRemoved, function(a,b) return a > b end)
 			while table.getn(toBeRemoved) > 0 do
 				table.remove(lasers, toBeRemoved[1])
+				table.remove(toBeRemoved, 1)
+			end
+		end
+
+		if level == 4 then
+			for i, v in pairs(mags) do
+				v:update(dt)
+				if math.abs(v.position.x-player.position.x)<64 and math.abs(v.position.y-player.position.y)<64 then
+					v.destroyed = true
+					ammo = ammo + 2
+				end
+				if v.destroyed then
+					table.insert(toBeRemoved, i)
+				end
+			end
+
+			table.sort(toBeRemoved, function(a,b) return a > b end)
+			while table.getn(toBeRemoved) > 0 do
+				table.remove(mags, toBeRemoved[1])
 				table.remove(toBeRemoved, 1)
 			end
 		end
@@ -406,6 +440,18 @@ function love.draw()
 			for i, v in pairs(lasers) do
 				v:draw()
 			end
+		elseif level == 4 then
+			love.graphics.clear(0.5, 0.6, 0.1)
+			if ammo > 0 then
+				love.graphics.setColor(1.0, 1.0, 0.0)
+			else
+				love.graphics.setColor(1.0, 0.0, 0.0)
+			end
+			love.graphics.printf(ammo..'x', love.graphics.newFont(24), love.math.newTransform(player.position.x-32, player.position.y-64), 64, "center")
+			for i, v in pairs(mags) do
+				local s = math.abs((v.timer.value-math.floor(v.timer.value))-0.5)/4+0.75
+				love.graphics.draw(magTexture, v.position.x, v.position.y, 0, s, s, 32)
+			end
 		end
 
 		love.graphics.setColor(1.0, 1.0, 1.0)
@@ -413,7 +459,7 @@ function love.draw()
 		for i, b in pairs(cornerCoords) do
 			if level == 1 or level == 3 then
 				love.graphics.draw(xTexture, b.x, b.y, 0, 1, 1, 32, 32)
-			elseif level == 2 then
+			elseif level == 2 or level == 4 then
 				love.graphics.draw(blockTexture, b.x, b.y, 0, 1, 1, 32, 32)
 			end
 		end
