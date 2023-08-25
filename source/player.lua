@@ -1,4 +1,4 @@
-function Commander(posX, posY)
+function Player(posX, posY)
 	return {
 		position = {x = posX, y = posY},
 		orientation = "front",

@@ -1,42 +1,34 @@
 function LevelChoose()
     return {
-		chosen = 1,
-		optionTexts = {
-			"LEVEL 1",
-            "LEVEL 2",
-            "LEVEL 3",
-            "LEVEL 4",
-            "LEVEL 5"
-		},
-		smallFont = love.graphics.newFont(24),
-		bigFont = love.graphics.newFont(32),
-		draw = function(self, unlocked)
-			for i = 1, table.getn(self.optionTexts) do
-				local f
-				if self.chosen == i then
-					f = self.bigFont
-				else
-					f = self.smallFont
-				end
-				if unlocked[i] then
-					love.graphics.setColor(1.0, 1.0, 1.0)
-				else
-					love.graphics.setColor(0.5, 0.5, 0.5)
-				end
-				love.graphics.printf(self.optionTexts[i], f, love.math.newTransform(216, 200+48*i), 400, "center")
-			end
+		menu = Menu(200, {
+			{name = "LEVEL 1", available = true, perform = function()
+				mode = "game"
+				game.variable.level = 1
+				game:restart()
+			end},
+			{name = "LEVEL 2", available = false, perform = function()
+				mode = "game"
+				game.variable.level = 2
+				game:restart()
+			end},
+			{name = "LEVEL 3", available = false, perform = function()
+				mode = "game"
+				game.variable.level = 3
+				game:restart()
+			end},
+			{name = "LEVEL 4", available = false, perform = function()
+				mode = "game"
+				game.variable.level = 4
+				game:restart()
+			end},
+			{name = "LEVEL 5", available = false, perform = function()
+				mode = "game"
+				game.variable.level = 5
+				game:restart()
+			end}
+		}),
+		draw = function(self)
+			self.menu:draw()
 		end,
-		moveUp = function(self)
-			self.chosen = self.chosen - 1
-			if self.chosen < 1 then
-				self.chosen = table.getn(self.optionTexts)
-			end
-		end,
-		moveDown = function(self)
-			self.chosen = self.chosen + 1
-			if self.chosen > table.getn(self.optionTexts) then
-				self.chosen = 1
-			end
-		end
     }
 end

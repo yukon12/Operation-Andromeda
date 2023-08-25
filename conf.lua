@@ -5,5 +5,5 @@ function love.conf(t)
 	t.window.width = 832
 	t.window.height = 832
 	t.console = false
-	t.window.icon = "resources/logo.png"
+	t.window.icon = "resources/icon.png"
 end
