@@ -5,8 +5,8 @@ Some Sound effects come from https://pixabay.com.
 ***
 Some screenshots:
 
-![alt-text](https://github.com/yukon12/Operation-Andromeda/blob/master/screenshots/ss1)
-![alt-text](https://github.com/yukon12/Operation-Andromeda/blob/master/screenshots/ss2)
+![alt-text](https://github.com/yukon12/Operation-Andromeda/blob/master/screenshots/ss1.png)
+![alt-text](https://github.com/yukon12/Operation-Andromeda/blob/master/screenshots/ss2.png)
 
-![alt-text](https://github.com/yukon12/Operation-Andromeda/blob/master/screenshots/ss3)
-![alt-text](https://github.com/yukon12/Operation-Andromeda/blob/master/screenshots/ss4)
+![alt-text](https://github.com/yukon12/Operation-Andromeda/blob/master/screenshots/ss3.png)
+![alt-text](https://github.com/yukon12/Operation-Andromeda/blob/master/screenshots/ss4.png)
