@@ -62,7 +62,7 @@ function Game()
             elseif self.variable.level == 4 then
                 self.timer.enemy = Timer(1.5)
             elseif self.variable.level == 5 then
-                self.timer.enemy = Timer(10)
+                self.timer.enemy = Timer(1.5)
             end
 
             self.timer.enemy:reset()
